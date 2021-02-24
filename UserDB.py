@@ -1,11 +1,10 @@
 class UserDB(object):
     def __init__(self, userList=None):
         if userList is not None:
-            # Initial sort = O(log(n))
-            #TODO Check if it is necessary to sort list here
-            userList.sort()
             self.userList = userList
-            self._calculateFreeUserIDList()
+            self._buildUserDBIndex()
+            
+            print("Initial user list: {0}".format(self.userList))
         else:
             self.userList = []
             self.freeUserIDList = []
@@ -13,8 +12,7 @@ class UserDB(object):
     def addUser(self):
         userID = self._getNextUserId()
         self.userList.append(userID)
-        print("Current user DB(after add user) ")
-        print(self.freeUserIDList)
+        print("Current user DB(after add user) {0}: {1}".format(userID, self.freeUserIDList))
 
     def cipherUserDB(self, cipherKey):
         newUserList = []
@@ -24,10 +22,7 @@ class UserDB(object):
             newUserID = userID ^ cipherKey
             newUserList.append(newUserID)
         self.userList = newUserList
-        #TODO Check if it is necessary to sort list here
-        self.userList.sort()
-        self._calculateFreeUserIDList()
-
+        self._buildUserDBIndex()
     def _calculateFreeUserIDList(self):
         #TODO Check if it is necessary to recreate list every time. Or maybe we can do it faster.
         freeUserIDList = []
@@ -40,13 +35,19 @@ class UserDB(object):
         self.freeUserIDList = freeUserIDList
         print("Free numbers ")
         print(freeUserIDList)
-
+    def _buildUserDBIndex(self):
+        # Initial sort = O(log(n))
+        #TODO Check if it is necessary to sort list here
+        self.userList.sort()
+        self._calculateFreeUserIDList()
+        self.maxUserID = self.userList[-1]
     def _getNextUserId(self):
         # Get first element of array - O(1)
-        if len(self.freeUserIDList):
+        if len(self.freeUserIDList) == 0:
             #TODO: Add logic for evaluating max(self.userList)+1
             #TODO: This is another point to investigate asymptotic complexity
-            raise NotImplementedError
+            self.maxUserID += 1
+            nextUserId = self.maxUserID
         else:
             nextUserId = self.freeUserIDList[0]
             self.freeUserIDList = self.freeUserIDList[1:]
